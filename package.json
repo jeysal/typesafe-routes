@@ -11,17 +11,17 @@
     "tsd": "tsd build"
   },
   "devDependencies": {
-    "@types/tape": "^4.2.34",
-    "tape": "^4.13.2",
-    "ts-node": "^8.8.2",
+    "@types/tape": "4.13.0",
+    "tape": "5.0.1",
+    "ts-node": "9.0.0",
     "tsd": "^0.11.0",
     "typescript": "^4.1.0-beta"
   },
   "peerDependencies": {},
   "dependencies": {
-    "@types/qs": "^6.9.1",
+    "@types/qs": "6.9.5",
     "path-to-regexp": "^6.2.0",
-    "qs": "^6.9.3"
+    "qs": "6.9.4"
   },
   "files": [
     "build",
