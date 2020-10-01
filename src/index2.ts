@@ -1,4 +1,4 @@
-import { compile, parse } from "path-to-regexp";
+import { Key, parse, Token } from "path-to-regexp";
 import { stringify } from "qs";
 
 export type ExactShape<T, Shape> =
@@ -14,6 +14,7 @@ export type InferPathParams<P extends string> =
 export type InferParam<P extends string> =
   P extends `:${infer O}?` ? Partial<Record<O, any>>
   : P extends `:${infer O}*` ? Record<O, any>
+  : P extends `:${infer O}+` ? Record<O, any>
   : P extends `:${infer O}` ? Record<O, any>
   : {};
 
@@ -21,18 +22,19 @@ type ExtractParserTypes<P extends Record<string, Parser<any>>> = {
   [K in keyof P]: ReturnType<P[K]["parse"]>;
 }
 
-export type RouteNode<P extends string, PM extends ParserMap<P>, C extends ChildrenMap> = {
-  parseParams: <K extends keyof InferPathParams<P>>(
+export type RouteNode<T extends string, PM extends ParserMap<T>, C extends ChildrenMap> = {
+  parseParams: <K extends keyof InferPathParams<T>>(
     params: Record<K, string>,
     defaults?: Partial<ExtractParserTypes<PM>>,
   ) => ExtractParserTypes<PM>;
-  path: P;
+  templateWithQuery: T;
+  template: string;
   children: C;
   parserMap: PM;
 } & (
   (params: ExtractParserTypes<PM>) => {
     $: string;
-    $self: RouteNode<P, PM, C>;
+    $self: RouteNode<T, PM, C>;
   } & {
     [K in keyof C]: C[K];
   }
@@ -67,84 +69,117 @@ export const booleanParser: Parser<boolean> = {
   serialize: (b) => b.toString(),
 }
 
+const isKey = (x: Token): x is Key => !!(x as Key).name;
+
+const filterParserMap = (
+  parserMap: Record<string, Parser<any>>,
+  tokens: Token[],
+): Record<string, Parser<any>> =>
+  tokens.reduce<Record<string, Parser<any>>>((acc, t: Token) =>
+    !isKey(t) ? acc : {...acc, [t.name]: parserMap[t.name]},
+    {},
+  );
+
+type ParseRouteResult = ReturnType<typeof parseRoute>;
+const parseRoute = (pathWithQuery: string, parserMap: Record<string, Parser<any>>) => {
+  const [pathTemplate, ...queryFragments] = pathWithQuery.split("&");
+  const queryTemplate = queryFragments.join("/");
+  const pathTokens = parse(pathTemplate);
+  const queryTokens = parse(queryTemplate);
+  const pathParamParsers =  filterParserMap(parserMap, pathTokens);
+  const queryParamParsers = filterParserMap(parserMap, queryTokens);
+  return {
+    pathTemplate,
+    pathTokens,
+    queryTokens,
+    pathParamParsers,
+    queryParamParsers,
+  };
+}
+
 const stringifyParams = (
   parserMap: Record<string, Parser<any>>,
   params: Record<string, any>,
 ): Record<string, string> =>
   Object.keys(parserMap).reduce((acc, k) => ({
-    ...acc,
-    [k]: parserMap[k].serialize(params[k]),
+    ...acc, ...(
+      params[k] ? {[k]: parserMap[k].serialize(params[k]) } : {}
+    ),
   }), {});
-
-const parsePath = (path: string, params: Record<string, string>) => {
-  const [pathWithoutQuery] = path.split("&");
-  const tokens = parse(pathWithoutQuery);
-  const queryParams = Object.keys(params)
-    .filter((k) =>
-      tokens.every((t: any) => t.name && k !== t.name)
-    )
-    .reduce<Record<string, string>>((acc, k) => ({
-      ...acc,
-      [k]: params[k],
-    }), {});
-  return { pathWithoutQuery, queryParams };
-}
 
 // <T extends string> ensures successful literals inference (paths)
 export const route = <T extends string, PM extends ParserMap<T>, C extends ChildrenMap>(
-  path: T,
+  templateWithQuery: T,
   parserMap: PM, //ExactShape<PM, ParserMap<T>>,
-  children?: C,
+  children: C,
   previousQueryParams: Record<string, string> = {},
-): RouteNode<T, PM, C> => 
-  new Proxy<any>(() => {}, {
-    apply: (_, __, params: ExtractParserTypes<PM>) => {
-      const stringifiedParams = {
-        ...previousQueryParams,
-        ...stringifyParams(parserMap, params),
-      };
-      const { pathWithoutQuery, queryParams } = parsePath(path, stringifiedParams);
-      return routeWithParams(
-        pathWithoutQuery, parserMap, stringifiedParams, children ?? {}, queryParams,
-      );
-    },
+  previousPath = "",
+): RouteNode<T, PM, C> => {
+  const parsedRoute = parseRoute(templateWithQuery, parserMap);
+  return new Proxy<any>(() => {}, {
+    apply: (_, __, [rawParams]: [ExtractParserTypes<PM>]) =>
+      routeWithParams(
+        parsedRoute,
+        parserMap,
+        children,
+        rawParams,
+        previousQueryParams,
+        previousPath,
+      ),
     get: (target, next, receiver) =>
       next === "parse" ? "parseParams(path, parser)"
+      : next === "templateWithQuery" ? templateWithQuery
+      : next === "template" ? parsedRoute.pathTemplate
+      : next === "children" ? children
+      : next === "parserMap" ? parserMap
       : Reflect.get(target, next, receiver)
   });
-
+}
 const routeWithParams = (
-  path: string,
+  { pathTokens, pathTemplate, queryParamParsers, pathParamParsers }: ParseRouteResult,
   parserMap: Record<string, Parser<any>>,
-  params: Record<string, string>,
   children: ChildrenMap,
-  queryParams: Record<string, string>,
+  rawParams: Record<string, any>,
+  previousQueryParams: Record<string, string>,
+  previousPath: string,
 ) =>
   new Proxy<any>({}, {
-    get: (target, next, receiver) =>
-      typeof next === "symbol" ? Reflect.get(target, next,receiver)
-      // full path with search query
-      : next === "$" ? stringifyRoute(path, params, queryParams)
-      // recursive route 
-      : next === "$self" ? route(
-          `${stringifyRoute(path, params)}/${path}`,
-          parserMap,
-          children,
+    get: (target, next, receiver) => {
+      const pathParams = stringifyParams(pathParamParsers, rawParams);
+      const queryParams = {
+        ...previousQueryParams,
+        ...stringifyParams(queryParamParsers, rawParams),
+      };
+      return typeof next === "symbol" ? Reflect.get(target, next,receiver)
+        // full path with search query
+        : next === "$" ? `${previousPath}/${stringifyRoute(pathTokens, pathParams, queryParams)}`
+        // recursive reference
+        : next === "$self" ? route(
+            pathTemplate,
+            parserMap,
+            children,
+            queryParams,
+            `${previousPath}/${stringifyRoute(pathTokens, pathParams)}`,
+          )
+        // child route
+        : route(
+          children[next].templateWithQuery,
+          children[next].parserMap,
+          children[next].children,
           queryParams,
-        )
-      // child route
-      : route(
-        `${stringifyRoute(path, params)}/${children[next].path}`,
-        children[next].parserMap,
-        children[next].children,
-        queryParams,
-      ),
+          `${previousPath}/${stringifyRoute(pathTokens, pathParams)}`,
+        );
+    }
   });
 
 const stringifyRoute = (
-  path: string,
+  pathTokens: Token[],
   params: Record<string, string>,
   queryParams?: Record<string, string>,
 ): string =>
-  compile(path, {encode: encodeURIComponent})(params)
-    + queryParams ? stringify(queryParams, { addQueryPrefix: true }) : "";
+  pathTokens.map((t) =>
+    isKey(t) ? encodeURIComponent(params[t.name]) : t
+  )
+  .join("/") + (
+    queryParams ? stringify(queryParams, { addQueryPrefix: true }) : ""
+  );
