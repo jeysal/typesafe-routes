@@ -43,7 +43,7 @@ test("recursive routes", (t) => {
 });
 
 test("param parser", (t) => {
-  t.plan(3);
+  t.plan(4);
 
   const groupRoute = route("group/:groupId?&:filter?&:limit&:date?", { 
     groupId: stringParser,
@@ -62,6 +62,12 @@ test("param parser", (t) => {
     groupRoute.parseParams({ limit: "9" }),
     { limit: 9 },
     "should skip optional params",
+  );
+
+  t.deepEqual(
+    groupRoute.parseParams({ limit: "9", extra: 1 } as any),
+    { limit: 9 },
+    "should not throw if additional params were provided",
   );
 
   t.throws(

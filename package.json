@@ -8,10 +8,13 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn test && yarn tsc && yarn tsd",
-    "test": "yarn tape -r ts-node/register src/test.ts"
+    "test": "yarn tape -r ts-node/register src/test.ts",
+    "express": "yarn ts-node src/demo/express.ts"
   },
   "devDependencies": {
+    "@types/express": "^4.17.8",
     "@types/tape": "4.13.0",
+    "express": "^4.17.1",
     "tape": "5.0.1",
     "ts-node": "9.0.0",
     "ts-toolbelt": "^8.0.6",

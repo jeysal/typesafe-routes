@@ -158,7 +158,7 @@ export const route: RouteFn = function(
   parserMap,
   children,
 ){
-  // console.log("route", {templateWithQuery, parserMap});
+  // DEBUG: console.log("route", {templateWithQuery, parserMap});
   const parsedRoute = parseRoute(templateWithQuery, parserMap);
   return new Proxy<any>(() => {}, {
     apply: (_, __, [rawParams]: [RawParams]) =>
@@ -231,7 +231,7 @@ const stringifyRoute = (
   queryParams?: SerializedParams,
 ): string =>
   pathTokens.map((t) =>
-    isKey(t) ? params[t.name] : t
+    isKey(t) ? params[t.name] : t.replace("/", "")
   )
   .filter((x) => !!x)
   .map(encodeURIComponent)
@@ -248,7 +248,9 @@ const paramsParser = (
   const parsedParams = Object.keys(params)
     .reduce<RawParams>((acc, k) => ({
       ...acc,
-      [k]: parserMap[k].parse(params[k]),
+      ...(parserMap[k] ? {
+        [k]: parserMap[k].parse(params[k])
+      } : {}),
     }), {});
   if( strict ) {
     pathTokens.concat(queryTokens)
