@@ -69,3 +69,22 @@ test("param parser", (t) => {
     "should throw error in strict mode",
   );
 });
+
+test("template", (t) => {
+  t.plan(1);
+
+  const settingsRoute = route("settings/:settingsId", { settingsId: stringParser }, { })
+  const groupRoute = route("group/:groupId?&:filter?&:limit", { 
+    groupId: stringParser,
+    filter: booleanParser,
+    limit: intParser,
+  }, {
+    settingsRoute,
+  });
+
+  t.deepEqual(
+    [settingsRoute.template, groupRoute.template],
+    ["settings/:settingsId", "group/:groupId?"],
+    "should match templates"
+  );
+});
