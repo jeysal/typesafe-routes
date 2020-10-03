@@ -174,4 +174,4 @@ So far I consider this library feature-complete that's why I will be mainly conc
 
 ## Project Support
 
-<a href="https://www.buymeacoffee.com/kruschid" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+<a href="https://www.buymeacoffee.com/kruschid" target="_blank"><img width="30%" src="https://cdn.buymeacoffee.com/buttons/v2/default-orange.png" alt="Buy Me A Coffee" ></a>
