@@ -158,7 +158,8 @@ export const route: RouteFn = function(
   parserMap,
   children,
 ){
-  // DEBUG: console.log("route", {templateWithQuery, parserMap});
+  // DEBUG:
+  // console.log("route", {templateWithQuery, parserMap});
   const parsedRoute = parseRoute(templateWithQuery, parserMap);
   return new Proxy<any>(() => {}, {
     apply: (_, __, [rawParams]: [RawParams]) =>
@@ -198,9 +199,11 @@ const routeWithParams = (
         ...previousQueryParams,
         ...stringifyParams(queryParamParsers, rawParams),
       };
-      return next === "$"
+      return "$" === next
         // full path with search query
         ? `${previousPath}/${stringifyRoute(pathTokens, pathParams, queryParams)}`
+        : next === Symbol.toPrimitive ? () =>
+          `${previousPath}/${stringifyRoute(pathTokens, pathParams, queryParams)}`
         // recursive reference
         : next === "$self" ? route.call(
             {
