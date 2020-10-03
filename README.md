@@ -2,11 +2,11 @@
 
 # Typesafe Routes
 
-Spices up your favourite routing library by adding type safety to plain string based route definitions. Let typescript handle detection of broken links in compilation time while you create maintainable software products.
+Spices up your favorite routing library by adding type safety to plain string-based route definitions. Let typescript handle the detection of broken links in compilation time while you create maintainable software products.
 
-This project is framework agnostic. This means you can use it with your favorite framework that utilises [path-to-regex](https://github.com/pillarjs/path-to-regexp) based syntax. You can find some examples for [react-router](https://reacttraining.com/react-router/) and [express](https://expressjs.com/) in `src/demo`.
+You can use this utility with your favorite framework that follows [path-to-regex](https://github.com/pillarjs/path-to-regexp) syntax (although we only support it partially). You can find some demo applications with [react-router](https://reacttraining.com/react-router/) or [express](https://expressjs.com/) in `src/demo`.
 
-**Typesafe Routes utilises [Template Literal Types](https://devblogs.microsoft.com/typescript/announcing-typescript-4-1-beta/#template-literal-types) and [Recursive Conditional Types](https://devblogs.microsoft.com/typescript/announcing-typescript-4-1-beta/#recursive-conditional-types). These features are only available in [typescript version 4.1 which is still in beta but with release date set to November 2020](https://github.com/microsoft/TypeScript/issues/40124)**
+**Typesafe Routes utilizes [Template Literal Types](https://devblogs.microsoft.com/typescript/announcing-typescript-4-1-beta/#template-literal-types) and [Recursive Conditional Types](https://devblogs.microsoft.com/typescript/announcing-typescript-4-1-beta/#recursive-conditional-types). These features are only available in [typescript version 4.1 which is still in beta but with the release date set to November 2020](https://github.com/microsoft/TypeScript/issues/40124)**
 
 ## Installation (npm/yarn examples)
 
@@ -24,7 +24,7 @@ yarn add typesafe-routes@7.0.0-beta
 
 * `path: string` must be the path string according to the `path-to-regex` syntax.
 * `parserMap: Record<string, Parser>` contains parameter specific parser (`Parser`) identified by parameter name (`string`)
-* `children` assign children routes here in case you want to utilise serialization of nested routes
+* `children` assign children routes here in case you want to utilize serialization of nested routes
 
 ### Examples
 
@@ -63,7 +63,7 @@ accountRoute.parseParams({ accountId: "123"})
 
 ```
 
-Besides `stringParser` there are also `intParser`, `floatParser`, `dateParser` and `booleanParser` shipped with the module. The implementation of custom parsers must follow the interface `Parser<T>`. You can find more details on that topic further down the page.
+Besides `stringParser` there are also `intParser`, `floatParser`, `dateParser`, and `booleanParser` shipped with the module. The implementation of custom parsers must follow the interface `Parser<T>`. You can find more details on that topic further down the page.
 
 ### Optional Parameters
 
@@ -135,7 +135,7 @@ userRoute.parseParams({ start: "10", limit: "20", expertMode: "false" });
 
 ### Custom Parser 
 
-If you need to parse/serialize other datatypes than primitive types or dates or the build in parsers don't meet your requirements for some reasons you can create your own parsers with a few lines of code. The `Parser<T>` interface that helps yo to achieve that is defined as followed:
+If you need to parse/serialize other datatypes than primitive types or dates or the build-in parsers don't meet your requirements for some reason you can create your own parsers with a few lines of code. The `Parser<T>` interface that helps yo to achieve that is defined as followed:
 
 ``` ts
 interface Parser<T> {
@@ -144,7 +144,7 @@ interface Parser<T> {
 }
 ```
 
-Next example shows how it can be imported and used to achieve a typesafe `Vector2D` parser/serializer.
+The next example shows how it can be imported and used to achieve a typesafe `Vector2D` parser/serializer.
 
 ``` ts
 import { Parser, route } from "typesafe-routes";
@@ -170,7 +170,7 @@ vectorParser.parseParams({pos: "eyJ4IjoxLCJ5IjowfQ=="})
 
 ## Roadmap
 
-So far I consider this library feature complete that's why I will be mainly concerned about fixing bugs and improving the API. However if high demand for some for additional functionality or PRs show up I might be considering to expand the scope.
+So far I consider this library feature-complete that's why I will be mainly concerned about fixing bugs and improving the API. However, if some high demand for additional functionality or PRs shows up I might be considering expanding the scope.
 
 ## Project Support
 
