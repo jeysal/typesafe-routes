@@ -2,11 +2,11 @@
 
 # Typesafe Routes
 
-Spices up your favourite routing library by adding typesafety to plain string based route definitions. Let typescript handle detection of broken links in compilation time while you create maintainable software products.
+Spices up your favourite routing library by adding type safety to plain string based route definitions. Let typescript handle detection of broken links in compilation time while you create maintainable software products.
 
-This project is framework agnostic. This means you can use it with your favorite framework that utilises [path-to-regex](https://github.com/pillarjs/path-to-regexp) based syntax. You can find [react-router](https://reacttraining.com/react-router/) and [express](https://expressjs.com/) examples in `src/demo`.
+This project is framework agnostic. This means you can use it with your favorite framework that utilises [path-to-regex](https://github.com/pillarjs/path-to-regexp) based syntax. You can find some examples for [react-router](https://reacttraining.com/react-router/) and [express](https://expressjs.com/) in `src/demo`.
 
-**Typesafe Routes utilises [Template Literal Types](https://devblogs.microsoft.com/typescript/announcing-typescript-4-1-beta/#template-literal-types) and [Recursive Conditional Types](https://devblogs.microsoft.com/typescript/announcing-typescript-4-1-beta/#recursive-conditional-types). These features are only available in [typescript version 4.1 beta which will be released in November 2020](https://github.com/microsoft/TypeScript/issues/40124)**
+**Typesafe Routes utilises [Template Literal Types](https://devblogs.microsoft.com/typescript/announcing-typescript-4-1-beta/#template-literal-types) and [Recursive Conditional Types](https://devblogs.microsoft.com/typescript/announcing-typescript-4-1-beta/#recursive-conditional-types). These features are only available in [typescript version 4.1 which is still in beta but with release date set to November 2020](https://github.com/microsoft/TypeScript/issues/40124)**
 
 ## Installation (npm/yarn examples)
 
@@ -20,11 +20,11 @@ yarn add typesafe-routes@7.0.0-beta
 
 ## Usage
 
-### `route(path: string, parserMap: Record<string, Parser>, childrenMap: ChildrenMap)`
+### `route(path: string, parserMap: Record<string, Parser>, children: Record<string, ChildRoute>)`
 
 * `path: string` must be the path string according to the `path-to-regex` syntax.
 * `parserMap: Record<string, Parser>` contains parameter specific parser (`Parser`) identified by parameter name (`string`)
-* `childrenMap` assign children routes here in case you want to utilise serialization of nested routes
+* `children` assign children routes here in case you want to utilise serialization of nested routes
 
 ### Examples
 
