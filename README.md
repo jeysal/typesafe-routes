@@ -4,7 +4,7 @@
 
 Spices up your favorite routing library by adding type safety to plain string-based route definitions. Let typescript handle the detection of broken links in compilation time while you create maintainable software products.
 
-You can use this utility with your favorite framework that follows [path-to-regex](https://github.com/pillarjs/path-to-regexp) syntax (although we only support it partially). You can find some demo applications with [react-router](https://reacttraining.com/react-router/) or [express](https://expressjs.com/) in `src/demo`.
+You can use this utility with your favorite framework that follows [path-to-regex](https://github.com/pillarjs/path-to-regexp) syntax (although we only support a subset of it). You can find some demo applications with [react-router](https://reacttraining.com/react-router/) or [express](https://expressjs.com/) in `src/demo`.
 
 **Typesafe Routes utilizes [Template Literal Types](https://devblogs.microsoft.com/typescript/announcing-typescript-4-1-beta/#template-literal-types) and [Recursive Conditional Types](https://devblogs.microsoft.com/typescript/announcing-typescript-4-1-beta/#recursive-conditional-types). These features are only available in [typescript version 4.1 which is still in beta but with the release date set to November 2020](https://github.com/microsoft/TypeScript/issues/40124)**
 
