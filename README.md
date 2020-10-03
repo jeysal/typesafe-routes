@@ -144,7 +144,7 @@ interface Parser<T> {
 }
 ```
 
-The next example shows how it can be imported and used to achieve a typesafe `Vector2D` parser/serializer.
+The next example shows how it can be imported and used to implement a typesafe `Vector2D` parser/serializer.
 
 ``` ts
 import { Parser, route } from "typesafe-routes";
