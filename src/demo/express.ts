@@ -2,10 +2,12 @@ import express from "express";
 import { booleanParser, intParser, route, stringParser } from "..";
 
 const homeRoute = route("/", {}, {});
+
 const settingsRoute = route("/settings/:mode&:showAllOptions?", {
   mode: intParser,
   showAllOptions: booleanParser,
 }, {});
+
 const accountRoute = route("/account/:id", {
   id: stringParser,
 }, { settingsRoute });
