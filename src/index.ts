@@ -128,7 +128,14 @@ const parseRoute = (
 ) => {
   const [pathTemplate, ...queryFragments] = pathWithQuery.split("&");
   const queryTemplate = queryFragments.join("/");
-  const pathTokens = parse(pathTemplate);
+  const pathTokens = parse(pathTemplate).map((t) =>
+    isKey(t) ? {
+      ...t,
+      name: typeof t.name === "string"
+        ? t.name.replace(/\//g, "")
+        : t.name
+    } : t.replace(/\//g, "")
+  );
   const queryTokens = parse(queryTemplate);
   const pathParamParsers =  filterParserMap(parserMap, pathTokens);
   const queryParamParsers = filterParserMap(parserMap, queryTokens);
@@ -234,7 +241,7 @@ const stringifyRoute = (
   queryParams?: SerializedParams,
 ): string =>
   pathTokens.map((t) =>
-    isKey(t) ? params[t.name] : t.replace("/", "")
+    isKey(t) ? params[t.name] : t,
   )
   .filter((x) => !!x)
   .map(encodeURIComponent)
