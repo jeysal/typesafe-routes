@@ -44,7 +44,11 @@ var filterParserMap = function (parserMap, tokens) {
 var parseRoute = function (pathWithQuery, parserMap) {
     var _a = pathWithQuery.split("&"), pathTemplate = _a[0], queryFragments = _a.slice(1);
     var queryTemplate = queryFragments.join("/");
-    var pathTokens = path_to_regexp_1.parse(pathTemplate);
+    var pathTokens = path_to_regexp_1.parse(pathTemplate).map(function (t) {
+        return isKey(t) ? __assign(__assign({}, t), { name: typeof t.name === "string"
+                ? t.name.replace(/\//g, "")
+                : t.name }) : t.replace(/\//g, "");
+    });
     var queryTokens = path_to_regexp_1.parse(queryTemplate);
     var pathParamParsers = filterParserMap(parserMap, pathTokens);
     var queryParamParsers = filterParserMap(parserMap, queryTokens);
@@ -65,6 +69,7 @@ var stringifyParams = function (parserMap, params) {
 };
 var route = function (templateWithQuery, parserMap, children) {
     var _this = this;
+    // DEBUG:
     // console.log("route", {templateWithQuery, parserMap});
     var parsedRoute = parseRoute(templateWithQuery, parserMap);
     return new Proxy(function () { }, {
@@ -93,20 +98,23 @@ var routeWithParams = function (_a, children, rawParams, previousQueryParams, pr
         get: function (target, next, receiver) {
             var pathParams = stringifyParams(pathParamParsers, rawParams);
             var queryParams = __assign(__assign({}, previousQueryParams), stringifyParams(queryParamParsers, rawParams));
-            return next === "$"
+            return "$" === next
                 // full path with search query
                 ? previousPath + "/" + stringifyRoute(pathTokens, pathParams, queryParams)
-                // recursive reference
-                : next === "$self" ? exports.route.call({
-                    previousPath: previousPath + "/" + stringifyRoute(pathTokens, pathParams),
-                    previousQueryParams: queryParams
-                }, pathTemplate, parserMap, children)
-                    // child route
-                    : typeof next == "string" && children[next] ? exports.route.call({
+                : next === Symbol.toPrimitive ? function () {
+                    return previousPath + "/" + stringifyRoute(pathTokens, pathParams, queryParams);
+                }
+                    // recursive reference
+                    : next === "$self" ? exports.route.call({
                         previousPath: previousPath + "/" + stringifyRoute(pathTokens, pathParams),
                         previousQueryParams: queryParams
-                    }, children[next].templateWithQuery, children[next].parserMap, children[next].children)
-                        : Reflect.get(target, next, receiver);
+                    }, pathTemplate, parserMap, children)
+                        // child route
+                        : typeof next == "string" && children[next] ? exports.route.call({
+                            previousPath: previousPath + "/" + stringifyRoute(pathTokens, pathParams),
+                            previousQueryParams: queryParams
+                        }, children[next].templateWithQuery, children[next].parserMap, children[next].children)
+                            : Reflect.get(target, next, receiver);
         }
     });
 };
@@ -125,7 +133,9 @@ var paramsParser = function (_a) {
         var parsedParams = Object.keys(params)
             .reduce(function (acc, k) {
             var _a;
-            return (__assign(__assign({}, acc), (_a = {}, _a[k] = parserMap[k].parse(params[k]), _a)));
+            return (__assign(__assign({}, acc), (parserMap[k] ? (_a = {},
+                _a[k] = parserMap[k].parse(params[k]),
+                _a) : {})));
         }, {});
         if (strict) {
             pathTokens.concat(queryTokens)
